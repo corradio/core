@@ -37,10 +37,8 @@ RUN \
 ## Setup Home Assistant Core
 COPY . homeassistant/
 RUN \
-    uv pip install \
-        -e ./homeassistant \
-    && python3 -m compileall \
-        homeassistant/homeassistant
+    uv pip install --compile-bytecode \
+        -e ./homeassistant
 
 # Home Assistant S6-Overlay
 COPY rootfs /
