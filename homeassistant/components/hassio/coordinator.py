@@ -526,9 +526,7 @@ class HassioDataUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.warning("Could not fetch info for %s: %s", slug, err)
             return (slug, None)
         # Translate to legacy hassio names for compatibility
-        info_dict = info.to_dict()
-        info_dict["hassio_api"] = info_dict.pop("supervisor_api")
-        info_dict["hassio_role"] = info_dict.pop("supervisor_role")
+        info_dict = info.to_dict(by_alias=True)
         return (slug, info_dict)
 
     @callback

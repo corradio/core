@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 from typing import Any
 from unittest.mock import AsyncMock, call
 from uuid import uuid4
 
 from aiohasupervisor import SupervisorError
-from aiohasupervisor.models import AddonsOptions, Discovery, PartialBackupOptions
+from aiohasupervisor.models import (
+    AddonsOptions,
+    AddonState as SupervisorAddonState,
+    Discovery,
+    PartialBackupOptions,
+)
 import pytest
 
 from homeassistant.components.hassio.addon_manager import (
@@ -44,8 +50,10 @@ async def test_not_available_raises_exception(
     addon_info: AsyncMock,
 ) -> None:
     """Test addon not available raises exception."""
-    addon_store_info.return_value.available = False
-    addon_info.return_value.available = False
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=False
+    )
+    addon_info.return_value = replace(addon_info.return_value, available=False)
 
     with pytest.raises(AddonError) as err:
         await addon_manager.async_install_addon()
@@ -113,16 +121,21 @@ async def test_get_addon_info_not_installed(
 
 @pytest.mark.parametrize(
     ("addon_info_state", "addon_state"),
-    [("started", AddonState.RUNNING), ("stopped", AddonState.NOT_RUNNING)],
+    [
+        (SupervisorAddonState.STARTED, AddonState.RUNNING),
+        (SupervisorAddonState.STOPPED, AddonState.NOT_RUNNING),
+    ],
 )
 async def test_get_addon_info(
     addon_manager: AddonManager,
     addon_installed: AsyncMock,
-    addon_info_state: str,
+    addon_info_state: SupervisorAddonState,
     addon_state: AddonState,
 ) -> None:
     """Test get addon info when addon is installed."""
-    addon_installed.return_value.state = addon_info_state
+    addon_installed.return_value = replace(
+        addon_installed.return_value, state=addon_info_state
+    )
     assert await addon_manager.async_get_addon_info() == AddonInfo(
         available=True,
         hostname="core-test-addon",
@@ -201,8 +214,10 @@ async def test_install_addon(
     addon_info: AsyncMock,
 ) -> None:
     """Test install addon."""
-    addon_store_info.return_value.available = True
-    addon_info.return_value.available = True
+    addon_info.return_value = replace(addon_info.return_value, available=True)
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=True
+    )
 
     await addon_manager.async_install_addon()
 
@@ -216,8 +231,10 @@ async def test_install_addon_error(
     addon_info: AsyncMock,
 ) -> None:
     """Test install addon raises error."""
-    addon_store_info.return_value.available = True
-    addon_info.return_value.available = True
+    addon_info.return_value = replace(addon_info.return_value, available=True)
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=True
+    )
     install_addon.side_effect = SupervisorError("Boom")
 
     with pytest.raises(AddonError) as err:
@@ -505,7 +522,7 @@ async def test_update_addon(
     update_addon: AsyncMock,
 ) -> None:
     """Test update addon."""
-    addon_info.return_value.update_available = True
+    addon_info.return_value = replace(addon_info.return_value, update_available=True)
 
     await addon_manager.async_update_addon()
 
@@ -524,7 +541,7 @@ async def test_update_addon_no_update(
     update_addon: AsyncMock,
 ) -> None:
     """Test update addon without update available."""
-    addon_info.return_value.update_available = False
+    addon_info.return_value = replace(addon_info.return_value, update_available=False)
 
     await addon_manager.async_update_addon()
 
@@ -542,7 +559,7 @@ async def test_update_addon_error(
     update_addon: AsyncMock,
 ) -> None:
     """Test update addon raises error."""
-    addon_info.return_value.update_available = True
+    addon_info.return_value = replace(addon_info.return_value, update_available=True)
     update_addon.side_effect = SupervisorError("Boom")
 
     with pytest.raises(AddonError) as err:
@@ -566,7 +583,7 @@ async def test_schedule_update_addon(
     update_addon: AsyncMock,
 ) -> None:
     """Test schedule update addon."""
-    addon_info.return_value.update_available = True
+    addon_info.return_value = replace(addon_info.return_value, update_available=True)
 
     update_task = addon_manager.async_schedule_update_addon()
 
@@ -638,7 +655,9 @@ async def test_schedule_update_addon_error(
     error_message: str,
 ) -> None:
     """Test schedule update addon raises error."""
-    addon_installed.return_value.update_available = True
+    addon_installed.return_value = replace(
+        addon_installed.return_value, update_available=True
+    )
     create_partial_backup.side_effect = create_partial_backup_error
     update_addon.side_effect = update_addon_error
 
@@ -689,7 +708,9 @@ async def test_schedule_update_addon_logs_error(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Test schedule update addon logs error."""
-    addon_installed.return_value.update_available = True
+    addon_installed.return_value = replace(
+        addon_installed.return_value, update_available=True
+    )
     create_partial_backup.side_effect = create_partial_backup_error
     update_addon.side_effect = update_addon_error
 

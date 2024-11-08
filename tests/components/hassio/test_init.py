@@ -1,5 +1,6 @@
 """The tests for the hassio component."""
 
+from dataclasses import replace
 from datetime import timedelta
 import logging
 import os
@@ -198,7 +199,9 @@ def mock_all(
     addon_stats.side_effect = mock_addon_stats
 
     def mock_addon_info(slug: str):
-        addon_info.return_value.auto_update = slug == "test"
+        addon_info.return_value = replace(
+            addon_info.return_value, auto_update=slug == "test"
+        )
         return addon_info.return_value
 
     addon_info.side_effect = mock_addon_info

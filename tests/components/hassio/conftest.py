@@ -1,6 +1,7 @@
 """Fixtures for Hass.io."""
 
 from collections.abc import Generator
+from dataclasses import replace
 import os
 import re
 from unittest.mock import AsyncMock, Mock, patch
@@ -218,26 +219,33 @@ def all_setup_requests(
         "http://127.0.0.1/ingress/panels", json={"result": "ok", "data": {"panels": {}}}
     )
 
-    addon_installed.return_value.update_available = False
-    addon_installed.return_value.version = "1.0.0"
-    addon_installed.return_value.version_latest = "1.0.0"
-    addon_installed.return_value.repository = "core"
-    addon_installed.return_value.state = AddonState.STARTED
-    addon_installed.return_value.icon = False
+    addon_installed.return_value = replace(
+        addon_installed.return_value,
+        update_available=False,
+        version="1.0.0",
+        version_latest="1.0.0",
+        repository="core",
+        state=AddonState.STARTED,
+        icon=False,
+    )
 
     def mock_addon_info(slug: str):
         if slug == "test":
-            addon_installed.return_value.name = "test"
-            addon_installed.return_value.slug = "test"
-            addon_installed.return_value.url = (
-                "https://github.com/home-assistant/addons/test"
+            addon_installed.return_value = replace(
+                addon_installed.return_value,
+                name="test",
+                slug="test",
+                url="https://github.com/home-assistant/addons/test",
+                auto_update=True,
             )
-            addon_installed.return_value.auto_update = True
         else:
-            addon_installed.return_value.name = "test2"
-            addon_installed.return_value.slug = "test2"
-            addon_installed.return_value.url = "https://github.com"
-            addon_installed.return_value.auto_update = False
+            addon_installed.return_value = replace(
+                addon_installed.return_value,
+                name="test2",
+                slug="test2",
+                url="https://github.com",
+                auto_update=False,
+            )
 
         return addon_installed.return_value
 

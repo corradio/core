@@ -1,6 +1,7 @@
 """Test config flow."""
 
 from collections.abc import Generator
+from dataclasses import replace
 from http import HTTPStatus
 from unittest.mock import AsyncMock, Mock, patch
 from uuid import uuid4
@@ -69,7 +70,9 @@ async def test_hassio_discovery_startup(
             },
         )
     ]
-    addon_installed.return_value.name = "Mosquitto Test"
+    addon_installed.return_value = replace(
+        addon_installed.return_value, name="Mosquitto Test"
+    )
 
     assert get_addon_discovery_info.call_count == 0
 
@@ -123,7 +126,9 @@ async def test_hassio_discovery_startup_done(
             },
         )
     ]
-    addon_installed.return_value.name = "Mosquitto Test"
+    addon_installed.return_value = replace(
+        addon_installed.return_value, name="Mosquitto Test"
+    )
 
     with (
         patch(
@@ -178,7 +183,9 @@ async def test_hassio_discovery_webhook(
             "protocol": "3.1.1",
         },
     )
-    addon_installed.return_value.name = "Mosquitto Test"
+    addon_installed.return_value = replace(
+        addon_installed.return_value, name="Mosquitto Test"
+    )
 
     resp = await hassio_client.post(
         f"/api/hassio_push/discovery/{uuid!s}",

@@ -1,10 +1,12 @@
 """Test the Open Thread Border Router config flow."""
 
 import asyncio
+from dataclasses import replace
 from http import HTTPStatus
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
+from aiohasupervisor.models import AddonState
 import aiohttp
 import pytest
 import python_otbr_api
@@ -36,12 +38,15 @@ HASSIO_DATA_2 = HassioServiceInfo(
 @pytest.fixture(name="otbr_addon_info")
 def otbr_addon_info_fixture(addon_info: AsyncMock, addon_installed) -> AsyncMock:
     """Mock Supervisor otbr add-on info."""
-    addon_info.return_value.available = True
-    addon_info.return_value.hostname = ""
-    addon_info.return_value.options = {}
-    addon_info.return_value.state = "unknown"
-    addon_info.return_value.update_available = False
-    addon_info.return_value.version = None
+    addon_info.return_value = replace(
+        addon_info.return_value,
+        available=True,
+        hostname="",
+        options={},
+        state=AddonState.UNKNOWN,
+        update_available=False,
+        version=None,
+    )
     return addon_info
 
 
@@ -395,8 +400,9 @@ async def test_hassio_discovery_flow_yellow(
     url = "http://core-silabs-multiprotocol:8081"
     aioclient_mock.get(f"{url}/node/dataset/active", text="aa")
 
-    otbr_addon_info.return_value.available = True
-    otbr_addon_info.return_value.options = {"device": "/dev/ttyAMA1"}
+    otbr_addon_info.return_value = replace(
+        otbr_addon_info.return_value, available=True, options={"device": "/dev/ttyAMA1"}
+    )
 
     with (
         patch(
@@ -451,8 +457,9 @@ async def test_hassio_discovery_flow_sky_connect(
     url = "http://core-silabs-multiprotocol:8081"
     aioclient_mock.get(f"{url}/node/dataset/active", text="aa")
 
-    otbr_addon_info.return_value.available = True
-    otbr_addon_info.return_value.options = {"device": device}
+    otbr_addon_info.return_value = replace(
+        otbr_addon_info.return_value, available=True, options={"device": device}
+    )
 
     with patch(
         "homeassistant.components.otbr.async_setup_entry",

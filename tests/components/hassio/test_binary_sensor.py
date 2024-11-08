@@ -1,8 +1,10 @@
 """The tests for the hassio binary sensors."""
 
+from dataclasses import replace
 import os
 from unittest.mock import AsyncMock, patch
 
+from aiohasupervisor.models import AddonState
 import pytest
 
 from homeassistant.components.hassio import DOMAIN
@@ -159,21 +161,23 @@ def mock_all(
 @pytest.mark.parametrize(
     ("entity_id", "expected", "addon_state"),
     [
-        ("binary_sensor.test_running", "on", "started"),
-        ("binary_sensor.test2_running", "off", "stopped"),
+        ("binary_sensor.test_running", "on", AddonState.STARTED),
+        ("binary_sensor.test2_running", "off", AddonState.STOPPED),
     ],
 )
 async def test_binary_sensor(
     hass: HomeAssistant,
     entity_id: str,
     expected: str,
-    addon_state: str,
+    addon_state: AddonState,
     aioclient_mock: AiohttpClientMocker,
     entity_registry: er.EntityRegistry,
     addon_installed: AsyncMock,
 ) -> None:
     """Test hassio OS and addons binary sensor."""
-    addon_installed.return_value.state = addon_state
+    addon_installed.return_value = replace(
+        addon_installed.return_value, state=addon_state
+    )
     config_entry = MockConfigEntry(domain=DOMAIN, data={}, unique_id=DOMAIN)
     config_entry.add_to_hass(hass)
 

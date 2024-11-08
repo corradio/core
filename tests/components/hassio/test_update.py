@@ -1,5 +1,6 @@
 """The tests for the hassio update entities."""
 
+from dataclasses import replace
 from datetime import timedelta
 import os
 from unittest.mock import AsyncMock, patch
@@ -181,7 +182,9 @@ async def test_update_entities(
     addon_installed: AsyncMock,
 ) -> None:
     """Test update entities."""
-    addon_installed.return_value.auto_update = auto_update
+    addon_installed.return_value = replace(
+        addon_installed.return_value, auto_update=auto_update
+    )
     config_entry = MockConfigEntry(domain=DOMAIN, data={}, unique_id=DOMAIN)
     config_entry.add_to_hass(hass)
 

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from dataclasses import replace
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 from aiohasupervisor import SupervisorError
-from aiohasupervisor.models import AddonsOptions
+from aiohasupervisor.models import AddonsOptions, AddonState as SupervisorAddonState
 import pytest
 
 from homeassistant.components.hassio import AddonError, AddonInfo, AddonState, HassIO
@@ -417,7 +418,9 @@ async def test_option_flow_install_multi_pan_addon_zha_other_radio(
     await hass.async_block_till_done()
     install_addon.assert_called_once_with("core_silabs_multiprotocol")
 
-    addon_info.return_value.hostname = "core-silabs-multiprotocol"
+    addon_info.return_value = replace(
+        addon_info.return_value, hostname="core-silabs-multiprotocol"
+    )
     result = await hass.config_entries.options.async_configure(result["flow_id"])
     assert result["type"] is FlowResultType.SHOW_PROGRESS
     assert result["step_id"] == "start_addon"
@@ -679,8 +682,9 @@ async def test_option_flow_addon_installed_same_device_uninstall(
     assert result["step_id"] == "uninstall_addon"
 
     # Make sure the flasher addon is installed
-    addon_store_info.return_value.installed = False
-    addon_store_info.return_Value.available = True
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=False, available=True
+    )
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {silabs_multiprotocol_addon.CONF_DISABLE_MULTI_PAN: True}
@@ -807,8 +811,12 @@ async def test_option_flow_flasher_already_running_failure(
     assert result["step_id"] == "uninstall_addon"
 
     # The flasher addon is already installed and running, this is bad
-    addon_store_info.return_value.installed = True
-    addon_info.return_value.state = "started"
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True
+    )
+    addon_info.return_value = replace(
+        addon_info.return_value, state=SupervisorAddonState.STARTED
+    )
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {silabs_multiprotocol_addon.CONF_DISABLE_MULTI_PAN: True}
@@ -853,8 +861,9 @@ async def test_option_flow_addon_installed_same_device_flasher_already_installed
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "uninstall_addon"
 
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
 
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {silabs_multiprotocol_addon.CONF_DISABLE_MULTI_PAN: True}
@@ -872,8 +881,9 @@ async def test_option_flow_addon_installed_same_device_flasher_already_installed
     assert result["progress_action"] == "start_flasher_addon"
     assert result["description_placeholders"] == {"addon_name": "Silicon Labs Flasher"}
 
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
     await hass.async_block_till_done()
     install_addon.assert_not_called()
 
@@ -932,8 +942,9 @@ async def test_option_flow_flasher_install_failure(
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "uninstall_addon"
 
-    addon_store_info.return_value.installed = False
-    addon_store_info.return_value.available = True
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=False, available=True
+    )
     install_addon.side_effect = [AddonError()]
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {silabs_multiprotocol_addon.CONF_DISABLE_MULTI_PAN: True}
@@ -1698,10 +1709,12 @@ async def test_check_multi_pan_addon_auto_start(
     hass: HomeAssistant, addon_info, addon_store_info, start_addon
 ) -> None:
     """Test `check_multi_pan_addon` auto starting the addon."""
-
-    addon_info.return_value.state = "not_running"
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_info.return_value = replace(
+        addon_info.return_value, state=SupervisorAddonState.STOPPED
+    )
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
 
     # An error is raised even if we auto-start
     with pytest.raises(HomeAssistantError):
@@ -1714,10 +1727,12 @@ async def test_check_multi_pan_addon(
     hass: HomeAssistant, addon_info, addon_store_info, start_addon
 ) -> None:
     """Test `check_multi_pan_addon`."""
-
-    addon_info.return_value.state = "started"
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_info.return_value = replace(
+        addon_info.return_value, state=SupervisorAddonState.STARTED
+    )
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
 
     await silabs_multiprotocol_addon.check_multi_pan_addon(hass)
     start_addon.assert_not_called()
@@ -1742,10 +1757,12 @@ async def test_multi_pan_addon_using_device_not_running(
     hass: HomeAssistant, addon_info, addon_store_info
 ) -> None:
     """Test `multi_pan_addon_using_device` when the addon isn't running."""
-
-    addon_info.return_value.state = "not_running"
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_info.return_value = replace(
+        addon_info.return_value, state=SupervisorAddonState.STOPPED
+    )
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
 
     assert (
         await silabs_multiprotocol_addon.multi_pan_addon_using_device(
@@ -1767,16 +1784,19 @@ async def test_multi_pan_addon_using_device(
     expected_result: bool,
 ) -> None:
     """Test `multi_pan_addon_using_device` when the addon isn't running."""
-
-    addon_info.return_value.state = "started"
-    addon_info.return_value.options = {
-        "autoflash_firmware": True,
-        "device": options_device,
-        "baudrate": "115200",
-        "flow_control": True,
-    }
-    addon_store_info.return_value.installed = True
-    addon_store_info.return_value.available = True
+    addon_info.return_value = replace(
+        addon_info.return_value,
+        state=SupervisorAddonState.STARTED,
+        options={
+            "autoflash_firmware": True,
+            "device": options_device,
+            "baudrate": "115200",
+            "flow_control": True,
+        },
+    )
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, installed=True, available=True
+    )
 
     assert (
         await silabs_multiprotocol_addon.multi_pan_addon_using_device(

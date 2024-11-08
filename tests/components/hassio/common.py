@@ -2,20 +2,25 @@
 
 from __future__ import annotations
 
-from dataclasses import fields
+from dataclasses import fields, replace
 import logging
-from types import MethodType
 from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 from aiohasupervisor.models import (
+    AddonBoot,
+    AddonBootConfig,
     AddonsOptions,
     AddonsStats,
     AddonStage,
+    AddonState,
+    AppArmor,
+    CpuArch,
     InstalledAddonComplete,
     Repository,
     StoreAddon,
     StoreAddonComplete,
+    SupervisorRole,
 )
 
 from homeassistant.components.hassio.addon_manager import AddonManager
@@ -80,9 +85,7 @@ def mock_addon_store_info(
 ) -> AsyncMock:
     """Mock Supervisor add-on store info."""
     supervisor_client.store.addon_info.side_effect = addon_store_info_side_effect
-
-    supervisor_client.store.addon_info.return_value = addon_info = Mock(
-        spec=StoreAddonComplete,
+    supervisor_client.store.addon_info.return_value = StoreAddonComplete(
         slug="test",
         repository="core",
         available=True,
@@ -90,12 +93,31 @@ def mock_addon_store_info(
         update_available=False,
         version="1.0.0",
         supervisor_api=False,
-        supervisor_role="default",
-    )
-    addon_info.name = "test"
-    addon_info.to_dict = MethodType(
-        lambda self: mock_to_dict(self, STORE_ADDON_FIELDS),
-        addon_info,
+        supervisor_role=SupervisorRole.DEFAULT,
+        advanced=False,
+        arch=[CpuArch.AARCH64, CpuArch.AMD64, CpuArch.ARMV7],
+        build=False,
+        description="test",
+        documentation=True,
+        homeassistant=None,
+        icon=True,
+        logo=True,
+        name="test",
+        stage=AddonStage.STABLE,
+        url=None,
+        version_latest="1.0.0",
+        apparmor=AppArmor.DEFAULT,
+        auth_api=False,
+        detached=False,
+        docker_api=False,
+        full_access=False,
+        homeassistant_api=False,
+        host_network=False,
+        host_pid=False,
+        ingress=False,
+        long_description=None,
+        rating=6,
+        signed=True,
     )
     return supervisor_client.store.addon_info
 
@@ -105,24 +127,77 @@ def mock_addon_info(
 ) -> AsyncMock:
     """Mock Supervisor add-on info."""
     supervisor_client.addons.addon_info.side_effect = addon_info_side_effect
-
-    supervisor_client.addons.addon_info.return_value = addon_info = Mock(
-        spec=InstalledAddonComplete,
+    supervisor_client.addons.addon_info.return_value = InstalledAddonComplete(
         slug="test",
         repository="core",
-        available=False,
+        available=True,
+        update_available=False,
+        version="1.0.0",
+        supervisor_api=False,
+        supervisor_role=SupervisorRole.DEFAULT,
+        advanced=False,
+        arch=[CpuArch.AARCH64, CpuArch.AMD64, CpuArch.ARMV7],
+        build=False,
+        description="test",
+        documentation=True,
+        homeassistant=None,
+        icon=True,
+        logo=True,
+        name="test",
+        stage=AddonStage.STABLE,
+        url=None,
+        version_latest="1.0.0",
+        apparmor=AppArmor.DEFAULT,
+        auth_api=False,
+        detached=False,
+        docker_api=False,
+        full_access=False,
+        homeassistant_api=False,
+        host_network=False,
+        host_pid=False,
+        ingress=False,
+        long_description=None,
+        rating=6,
+        signed=True,
         hostname="",
         options={},
-        state="unknown",
-        update_available=False,
-        version=None,
-        supervisor_api=False,
-        supervisor_role="default",
-    )
-    addon_info.name = "test"
-    addon_info.to_dict = MethodType(
-        lambda self: mock_to_dict(self, INSTALLED_ADDON_FIELDS),
-        addon_info,
+        state=AddonState.UNKNOWN,
+        dns=[],
+        protected=True,
+        boot_config=AddonBootConfig.AUTO,
+        boot=AddonBoot.AUTO,
+        schema=[],
+        machine=[],
+        network=None,
+        network_description=None,
+        host_ipc=False,
+        host_uts=False,
+        host_dbus=False,
+        privileged=[],
+        changelog=True,
+        stdin=False,
+        gpio=False,
+        usb=False,
+        uart=False,
+        kernel_modules=False,
+        devicetree=False,
+        udev=False,
+        video=False,
+        audio=False,
+        services=[],
+        discovery=[],
+        translations={},
+        webui=None,
+        ingress_entry=None,
+        ingress_url=None,
+        ingress_port=None,
+        ingress_panel=None,
+        audio_input=None,
+        audio_output=None,
+        auto_update=False,
+        ip_address="0.0.0.0",
+        watchdog=False,
+        devices=[],
     )
     return supervisor_client.addons.addon_info
 
@@ -131,7 +206,9 @@ def mock_addon_not_installed(
     addon_store_info: AsyncMock, addon_info: AsyncMock
 ) -> AsyncMock:
     """Mock add-on not installed."""
-    addon_store_info.return_value.available = True
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=True
+    )
     return addon_info
 
 
@@ -139,20 +216,25 @@ def mock_addon_installed(
     addon_store_info: AsyncMock, addon_info: AsyncMock
 ) -> AsyncMock:
     """Mock add-on already installed but not running."""
-    addon_store_info.return_value.available = True
-    addon_store_info.return_value.installed = True
-    addon_info.return_value.available = True
-    addon_info.return_value.hostname = "core-test-addon"
-    addon_info.return_value.state = "stopped"
-    addon_info.return_value.version = "1.0.0"
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=True, installed=True
+    )
+    addon_info.return_value = replace(
+        addon_info.return_value,
+        available=True,
+        hostname="core-test-addon",
+        state=AddonState.STOPPED,
+        version="1.0.0",
+    )
     return addon_info
 
 
 def mock_addon_running(addon_store_info: AsyncMock, addon_info: AsyncMock) -> AsyncMock:
     """Mock add-on already running."""
-    addon_store_info.return_value.available = True
-    addon_store_info.return_value.installed = True
-    addon_info.return_value.state = "started"
+    addon_store_info.return_value = replace(
+        addon_store_info.return_value, available=True, installed=True
+    )
+    addon_info.return_value = replace(addon_info.return_value, state=AddonState.STARTED)
     return addon_info
 
 
@@ -163,11 +245,15 @@ def mock_install_addon_side_effect(
 
     async def install_addon(addon: str):
         """Mock install add-on."""
-        addon_store_info.return_value.available = True
-        addon_store_info.return_value.installed = True
-        addon_info.return_value.available = True
-        addon_info.return_value.state = "stopped"
-        addon_info.return_value.version = "1.0.0"
+        addon_store_info.return_value = replace(
+            addon_store_info.return_value, available=True, installed=True
+        )
+        addon_info.return_value = replace(
+            addon_info.return_value,
+            available=True,
+            state=AddonState.STOPPED,
+            version="1.0.0",
+        )
 
     return install_addon
 
@@ -179,10 +265,12 @@ def mock_start_addon_side_effect(
 
     async def start_addon(addon: str) -> None:
         """Mock start add-on."""
-        addon_store_info.return_value.available = True
-        addon_store_info.return_value.installed = True
-        addon_info.return_value.available = True
-        addon_info.return_value.state = "started"
+        addon_store_info.return_value = replace(
+            addon_store_info.return_value, available=True, installed=True
+        )
+        addon_info.return_value = replace(
+            addon_info.return_value, available=True, state=AddonState.STARTED
+        )
 
     return start_addon
 
@@ -199,8 +287,7 @@ def mock_set_addon_options_side_effect(addon_options: dict[str, Any]) -> Any | N
 
 def mock_addon_stats(supervisor_client: AsyncMock) -> AsyncMock:
     """Mock addon stats."""
-    supervisor_client.addons.addon_stats.return_value = addon_stats = Mock(
-        spec=AddonsStats,
+    supervisor_client.addons.addon_stats.return_value = AddonsStats(
         cpu_percent=0.99,
         memory_usage=182611968,
         memory_limit=3977146368,
@@ -209,9 +296,5 @@ def mock_addon_stats(supervisor_client: AsyncMock) -> AsyncMock:
         network_tx=82374138,
         blk_read=46010945536,
         blk_write=15051526144,
-    )
-    addon_stats.to_dict = MethodType(
-        lambda self: mock_to_dict(self, ADDONS_STATS_FIELDS),
-        addon_stats,
     )
     return supervisor_client.addons.addon_stats

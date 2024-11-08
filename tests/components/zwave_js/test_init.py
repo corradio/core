@@ -2,6 +2,7 @@
 
 import asyncio
 from copy import deepcopy
+from dataclasses import replace
 import logging
 from unittest.mock import AsyncMock, call, patch
 
@@ -773,8 +774,11 @@ async def test_update_addon(
     network_key = "abc123"
     addon_options["device"] = device
     addon_options["network_key"] = network_key
-    addon_info.return_value.version = addon_version
-    addon_info.return_value.update_available = update_available
+    addon_info.return_value = replace(
+        addon_info.return_value,
+        version=addon_version,
+        update_available=update_available,
+    )
     create_partial_backup.side_effect = create_partial_backup_side_effect
     update_addon.side_effect = update_addon_side_effect
     client.connect.side_effect = InvalidServerVersion(
