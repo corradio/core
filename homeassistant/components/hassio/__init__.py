@@ -118,7 +118,6 @@ from .handler import (  # noqa: F401
     HassioAPIError,
     async_get_green_settings,
     async_get_yellow_settings,
-    async_reboot_host,
     async_set_green_settings,
     async_set_yellow_settings,
     async_update_diagnostics,
