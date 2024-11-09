@@ -935,7 +935,7 @@ jobs:
             ${cov_params[@]} \
             -o console_output_style=count \
             -p no:sugar \
-            tests/components/modbus tests/components/homekit tests/components/unifiprotect tests/components/media_player tests/components/samsungtv tests/components/imap tests/components/smartthings tests/components/websocket_api tests/components/ring tests/components/fritzbox tests/components/renault tests/components/otbr tests/components/sonos tests/components/logbook  # tests/components/mobile_app tests/components/ecovacs tests/components/wyoming tests/components/workday tests/components/heos tests/components/binary_sensor tests/components/withings tests/components/wiz tests/components/motionblinds_ble tests/components/dhcp tests/components/statistics tests/components/here_travel_time tests/components/forked_daapd tests/components/prosegur tests/components/apcupsd tests/components/opentherm_gw tests/components/soundtouch
+            tests/components/modbus tests/components/homekit tests/components/unifiprotect tests/components/media_player tests/components/samsungtv tests/components/imap tests/components/smartthings  # tests/components/websocket_api tests/components/ring tests/components/fritzbox tests/components/renault tests/components/otbr tests/components/sonos tests/components/logbook
 
   pytest-full:
     runs-on: ubuntu-24.04
