@@ -59,6 +59,7 @@ INCLUDED_REQUIREMENTS_WHEELS = {
 
 MARKERS_PYTHON_313 = {
     "huum": "python_version<'3.13'",
+    "guppy3": "python_version<'3.13'",
 }
 
 OVERRIDDEN_REQUIREMENTS_ACTIONS = {
