@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import fields, replace
+from dataclasses import replace
 import logging
 from typing import Any
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 from aiohasupervisor.models import (
     AddonBoot,
@@ -27,9 +27,6 @@ from homeassistant.components.hassio.addon_manager import AddonManager
 from homeassistant.core import HomeAssistant
 
 LOGGER = logging.getLogger(__name__)
-INSTALLED_ADDON_FIELDS = [field.name for field in fields(InstalledAddonComplete)]
-STORE_ADDON_FIELDS = [field.name for field in fields(StoreAddonComplete)]
-ADDONS_STATS_FIELDS = [field.name for field in fields(AddonsStats)]
 
 MOCK_STORE_ADDONS = [
     StoreAddon(
@@ -63,15 +60,6 @@ MOCK_REPOSITORIES = [
         maintainer="Home Assistant",
     )
 ]
-
-
-def mock_to_dict(obj: Mock, fields: list[str]) -> dict[str, Any]:
-    """Aiohasupervisor mocks to dictionary representation."""
-    return {
-        field: getattr(obj, field)
-        for field in fields
-        if not isinstance(getattr(obj, field), Mock)
-    }
 
 
 def mock_addon_manager(hass: HomeAssistant) -> AddonManager:
