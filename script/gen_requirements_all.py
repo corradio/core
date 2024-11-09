@@ -57,6 +57,10 @@ INCLUDED_REQUIREMENTS_WHEELS = {
 # Requirements listed in "include" must be listed in EXCLUDED_REQUIREMENTS_CI, and
 # will be included in requirements_all_{action}.txt
 
+MARKERS_PYTHON_313 = {
+
+}
+
 OVERRIDDEN_REQUIREMENTS_ACTIONS = {
     "pytest": {
         "exclude": set(),
@@ -66,7 +70,7 @@ OVERRIDDEN_REQUIREMENTS_ACTIONS = {
     "wheels_aarch64": {
         "exclude": set(),
         "include": INCLUDED_REQUIREMENTS_WHEELS,
-        "markers": {},
+        "markers": MARKERS_PYTHON_313,
     },
     # Pandas has issues building on armhf, it is expected they
     # will drop the platform in the near future (they consider it
@@ -75,22 +79,22 @@ OVERRIDDEN_REQUIREMENTS_ACTIONS = {
     "wheels_armhf": {
         "exclude": {"env-canada", "noaa-coops", "pyezviz", "pykrakenapi"},
         "include": INCLUDED_REQUIREMENTS_WHEELS,
-        "markers": {},
+        "markers": MARKERS_PYTHON_313,
     },
     "wheels_armv7": {
         "exclude": set(),
         "include": INCLUDED_REQUIREMENTS_WHEELS,
-        "markers": {},
+        "markers": MARKERS_PYTHON_313,
     },
     "wheels_amd64": {
         "exclude": set(),
         "include": INCLUDED_REQUIREMENTS_WHEELS,
-        "markers": {},
+        "markers": MARKERS_PYTHON_313,
     },
     "wheels_i386": {
         "exclude": set(),
         "include": INCLUDED_REQUIREMENTS_WHEELS,
-        "markers": {},
+        "markers": MARKERS_PYTHON_313,
     },
 }
 
