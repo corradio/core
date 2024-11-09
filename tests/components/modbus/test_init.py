@@ -859,6 +859,7 @@ async def test_pb_service_write(
     caplog.set_level(logging.DEBUG)
     func_name[do_write[FUNC]].return_value = do_return[VALUE]
     await hass.services.async_call(DOMAIN, do_write[SERVICE], data, blocking=True)
+    await hass.async_block_till_done()
     assert func_name[do_write[FUNC]].called
     assert func_name[do_write[FUNC]].call_args[0] == (
         data[ATTR_ADDRESS],
