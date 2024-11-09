@@ -211,7 +211,7 @@ jobs:
       - name: Create requirements file for custom build
         run: |
           touch requirements_custom.txt
-          echo "cython==3.0.11" >> requirements_custom.txt
+          echo "cython<=3.0.12" >> requirements_custom.txt
 
       - name: Build wheels (custom)
         uses: cdce8p/wheels@master
