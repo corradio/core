@@ -881,6 +881,7 @@ jobs:
       Run tests Python ${{ matrix.python-version }} (modbus)
     steps:
       - name: Install additional OS dependencies
+        if: false
         run: |
           sudo rm /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get update
@@ -925,7 +926,7 @@ jobs:
             cov_params+=(--cov-report=xml)
           fi
 
-          python3 -b -X dev -m pytest -x \
+          python3 -b -X dev -m pytest\
             -qq \
             --timeout=9 \
             --durations=10 \
