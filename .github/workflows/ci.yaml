@@ -929,7 +929,6 @@ jobs:
             -qq \
             --timeout=9 \
             --durations=10 \
-            --numprocesses auto \
             --snapshot-details \
             --dist=loadfile \
             ${cov_params[@]} \
