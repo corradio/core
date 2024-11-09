@@ -58,7 +58,7 @@ INCLUDED_REQUIREMENTS_WHEELS = {
 # will be included in requirements_all_{action}.txt
 
 MARKERS_PYTHON_313 = {
-
+    "huum": "python_version<'3.13'",
 }
 
 OVERRIDDEN_REQUIREMENTS_ACTIONS = {
