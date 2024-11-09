@@ -935,7 +935,7 @@ jobs:
             ${cov_params[@]} \
             -o console_output_style=count \
             -p no:sugar \
-            tests/components/modbus/test_init.py tests/components/media_player tests/components/imap/test_init.py
+            tests/components/modbus/test_init.py tests/components/media_player/test_init.py tests/components/imap/test_init.py
 
   pytest-full:
     runs-on: ubuntu-24.04
