@@ -927,7 +927,7 @@ jobs:
           fi
 
           python3 -b -X dev -m pytest\
-            -qq \
+            -v \
             --timeout=9 \
             --durations=10 \
             --numprocesses auto \
